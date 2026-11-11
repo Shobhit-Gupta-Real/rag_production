@@ -61,6 +61,20 @@ class Settings(BaseSettings):
     LANGSMITH_PROJECT: str = "rag_scale_test"
     LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
 
+    # --- LOCAL EMBEDDING FALLBACK ---
+    # True = load the pinned Jina v3 fallback from the local HF cache only (no network).
+    HF_HUB_OFFLINE: bool = False
+    # Comma-separated source types embedded with the local Jina v3 model instead of the API
+    # (same weights → same vector space). E.g. "noisy" to save API tokens on bulk data.
+    EMBED_LOCAL_SOURCE_TYPES: str = ""
+
+    # --- OCR (scanned PDF pages, image files) ---
+    OCR_ENABLED: bool = True
+    OCR_LANG: str = "eng"  # Tesseract language code(s), e.g. "eng+deu"
+    OCR_DPI: int = 300  # render resolution for PDF pages; 300 is the OCR standard
+    OCR_MIN_CHARS: int = 20  # PDF pages with less extracted text than this are OCR'd
+    TESSERACT_CMD: str | None = None  # path to tesseract; auto-detected if unset
+
     @field_validator("QDRANT_API_KEY", mode="before")
     @classmethod
     def _empty_qdrant_key_as_none(cls, v):
@@ -68,6 +82,10 @@ class Settings(BaseSettings):
         if v == "" or v is None:
             return None
         return v
+
+    @property
+    def embed_local_source_types(self) -> set[str]:
+        return {s.strip() for s in self.EMBED_LOCAL_SOURCE_TYPES.split(",") if s.strip()}
 
     @property
     def judge_api_key(self) -> str:
@@ -121,4 +139,11 @@ def apply_langchain_env():
         os.environ.setdefault("LANGCHAIN_ENDPOINT", settings.LANGSMITH_ENDPOINT)
 
 
+def apply_hf_env():
+    """Export HF_HUB_OFFLINE so huggingface_hub (which reads os.environ at import) sees it."""
+    if settings.HF_HUB_OFFLINE:
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+
+
 apply_langchain_env()
+apply_hf_env()

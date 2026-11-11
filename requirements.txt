@@ -13,14 +13,17 @@ pytz                        # Timezone handling for logs
 nest-asyncio                # Support for nested async loops in notebooks/streamlit
 
 # --- JINA API EMBEDDINGS + LOCAL FALLBACK ---
-sentence-transformers       # Local fallback embeddings (mxbai-embed-large-v1)
+sentence-transformers       # Local fallback embeddings (jina-embeddings-v3, same model as API)
 torch                        # Required by sentence-transformers
+einops                       # Required by jina-embeddings-v3 remote code
 
 # --- VECTOR DB & RETRIEVAL ---
 qdrant-client               # Vector Database for semantic search
+fastembed                   # BM25 sparse vectors for hybrid search (local)
 
 # --- LANGCHAIN & AGENTIC ORCHESTRATION ---
 langchain                   # Core LLM orchestration
+langchain-text-splitters    # Recursive token-aware chunking
 langgraph                   # State-machine logic for cyclic agent flows
 langchain-google-vertexai   # Required shim for NeMo Guardrails internal import (no GCP credentials needed)
 langchain-community         # Community-contributed tools and loaders
@@ -29,7 +32,9 @@ pydantic>=2.0.0             # Data validation and settings management
 pydantic-settings           # Pydantic BaseSettings with dotenv support
 
 # --- DATA INGESTION & DOCUMENT PARSING ---
-unstructured                # Base library for DOCX/PPTX partitioning
+pytesseract==0.3.13         # OCR wrapper — needs the Tesseract program (brew install tesseract)
+pymupdf==2.1                 # Render PDF pages to images for OCR (AGPL licence)
+unstructured[docx,pptx]==0.21.5  # DOCX/PPTX partitioning; pinned: >=0.22 needs wrapt 2.x, which breaks opentelemetry-instrumentation
 python-pptx                 # Parser for PowerPoint files
 python-docx                 # Parser for Word documents
 pypdf                       # Local PDF text extraction (replaces Document AI)
@@ -67,4 +72,4 @@ deepeval                    # Pytest-compatible test runner wrapping RAGAS & saf
 langfuse                    # Live production monitoring, tracing & user feedback collection
 
 # --- EMBEDDINGS (SENTENCE TRANSFORMERS) ---
-sentence-transformers       # Local fallback embeddings (mxbai-embed-large-v1)
+sentence-transformers       # Local fallback embeddings (jina-embeddings-v3)

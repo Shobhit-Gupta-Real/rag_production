@@ -8,7 +8,7 @@ A production-grade, enterprise-level RAG system built with **LangGraph**, **Port
 - **Guardrails**: NeMo Guardrails gate blocks off-topic, jailbreak, and injection inputs before any retrieval.
 - **LLM Gateway**: Portkey routes all LLM calls with automatic fallback between OpenAI and Anthropic via your configured Portkey virtual providers.
 - **Enterprise Search**: Qdrant Cloud for high-performance vector search + Jina AI Reranker API for semantic reranking.
-- **Jina AI Embeddings**: `jina-embeddings-v3` (1024-dim) via Jina API, with local `mxbai-embed-large-v1` fallback.
+- **Jina AI Embeddings**: `jina-embeddings-v3` (1024-dim) via Jina API, with local `jina-embeddings-v3` fallback (same model, pinned revision).
 - **Local Document Parsing**: PDF, HTML, TXT, DOCX, PPTX parsed entirely on-device — no external OCR service.
 - **Observability**: Full trace nesting with **Pydantic Logfire** and **LangSmith** across every agent node.
 - **Metrics**: Prometheus `/metrics` endpoint with custom RAG and guardrails counters.
@@ -72,7 +72,7 @@ graph TD
 | Guardrails | NeMo Guardrails |
 | Vector DB | Qdrant Cloud |
 | Reranking | Jina AI Reranker API (`jina-reranker-v3`) |
-| Embeddings | Jina AI `jina-embeddings-v3` (1024-dim) + local mxbai fallback |
+| Embeddings | Jina AI `jina-embeddings-v3` (1024-dim) + local Jina v3 fallback |
 | Document Parsing | pypdf + pdfplumber (local, no OCR service) |
 | Observability | Pydantic Logfire + LangSmith |
 | Evaluation | RAGAS + custom Tool Correctness (Jaccard) |

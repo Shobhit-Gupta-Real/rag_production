@@ -1,7 +1,7 @@
 # ==============================================================================
 # PRODUCTION REQUIREMENTS — Cloud Run only (pinned versions from local venv)
 # Eval/local-only packages (ragas, deepeval, streamlit) are excluded where possible.
-# sentence-transformers + torch are kept for the mxbai local embedding fallback.
+# sentence-transformers + torch are kept for the local Jina v3 embedding fallback.
 # Full local deps → requirements.txt
 # ==============================================================================
 
@@ -24,12 +24,15 @@ psycopg-pool==3.3.0
 psycopg-binary==3.3.0
 
 # --- JINA API EMBEDDINGS + LOCAL FALLBACK ---
-# sentence-transformers pulls torch; needed for the mxbai local fallback path.
+# sentence-transformers pulls torch; needed for the local Jina v3 fallback path.
 sentence-transformers==3.2.1
 torch==2.5.1
+einops==0.8.2
 
 # --- LANGCHAIN & AGENTIC ORCHESTRATION ---
 langchain==1.2.18
+langchain-text-splitters==1.1.3
+fastembed==0.9.0
 langgraph==1.1.10
 langchain-google-vertexai==3.2.3
 langchain-community==0.4.1

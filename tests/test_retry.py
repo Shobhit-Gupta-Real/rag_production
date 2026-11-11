@@ -11,8 +11,10 @@ def test_qdrant_search_retries_then_returns_empty():
     with (
         patch("app.services.retrieval.qdrant_service.client") as mock_client,
         patch("app.services.retrieval.qdrant_service.embed_query") as mock_embed,
+        patch("app.services.retrieval.qdrant_service.sparse_embed_query") as mock_sparse,
     ):
         mock_embed.return_value = [0.0] * 10
+        mock_sparse.return_value = MagicMock(indices=[1], values=[1.0])
         mock_client.query_points.side_effect = RuntimeError("transient")
 
         results = search_enterprise_knowledge("test query", limit=1)
