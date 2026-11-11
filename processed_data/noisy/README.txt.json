@@ -1,7 +1,14 @@
 {
   "filename": "README.txt",
   "source_type": "noisy",
+  "title": "README",
+  "file_hash": "81f348ad92774d6743d7e8fbcce8856284b613a1d7b24e990dbb340138ae0fdb",
   "chunks": [
-    "Generated synthetic noise dataset files inspired by academic PDF titles.\n\nIncluded formats:\n- TXT\n- HTML\n- DOCX\n- PPTX\n\nThe content is intentionally random and suitable for:\n- testing parsers\n- indexing systems\n- search experiments\n- document ingestion pipelines\n- storage/load simulations"
+    {
+      "chunk_index": 0,
+      "section": null,
+      "page": null,
+      "text": "Generated synthetic noise dataset files inspired by academic PDF titles.\n\nIncluded formats:\n- TXT\n- HTML\n- DOCX\n- PPTX\n\nThe content is intentionally random and suitable for:\n- testing parsers\n- indexing systems\n- search experiments\n- document ingestion pipelines\n- storage/load simulations"
+    }
   ]
 }

@@ -1,0 +1,32 @@
+{
+  "filename": "A Tool for the Symbolic Execution of Linux Binaries - PySymemu (Slides).pdf",
+  "source_type": "noisy",
+  "title": "A Tool for the Symbolic Execution of Linux Binaries - PySymemu (Slides)",
+  "file_hash": "c186a24bde4aa4d2525f0c6c7a6f1bcc7ad7e66aac4d8f9975ae946f59644cf6",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "section": null,
+      "page": 1,
+      "text": "Symbolic Execution \nof Linux binaries\nA tool for the\n\nAbout Symbolic Execution\n● Dynamically explore all program branches.\n● Inputs are considered symbolic variables.\n● Symbols remain uninstantiated and become \nconstrained at execution time.\n● At a conditional branch operating on \nsymbolic terms, the execution is forked.\n● Each feasible branch is taken, and the \nappropriate constraints logged.\n\n\nInput space >> Number of paths\nint main( ) {\n        int val;\n        read(STDIN, & val, sizeof(val) );\n        if ( val > 0 ) \n               if ( val < 100 )\n      do_something( );\n        else \n             do_something_else( );\n}\n\n\nThis is used for:\n● Test generation and bug hunting.\n● Reason about reachability. \n● Worst-Case Execution Time Analysis.\n● Comparing different versions of a func.\n● Deobfuscation, malware analisys.\n● AEG: Automatic Exploit Generation. Whaat?!\n\n\nState of the art\n● Lots of academic papers:\n○ 2008-12-OSDI-KLEE\n○ Unleashing MAYHEM on Binary\n● Several implementations: \n○ SymDroid, Cloud9, Pex, jCUTE, Java PathFinder, \nKLEE, s2e, fuzzball, mayhem, cbass\n● Only a few work on binary :\n○ libVEX / IL based\n○ quemu based\n\nOur aim\n● Emulate x86-64 machine code symbolically.\n● Load ELF executables.\n● Synthesize any process state as starting point.\n● The final code should be readable and easy to \nextend.\n● Use as few dependencies as possible:\n○  pyelftools, distorm3 and z3\n● Analysis state can be saved and restored.\n● Workload can be distributed (dispy)\n\n\nBasic architecture"
+    },
+    {
+      "chunk_index": 1,
+      "section": null,
+      "page": 11,
+      "text": "Basic architecture\n\n\nInstructions Frequency in GNU LIBC\n● 336 different opcodes\n● 160218 total instructions\n● 37% of them are MOV or ADD\n● currently 185 instruction \nimplemented\n\nCPU\n●  Based on distorm3 DecomposeInterface.\n●  Most instructions are very simple, ex.\n      @instruction\n    def DEC(cpu, dest):\n           res = dest.write( dest.read() - 1 )\n           #Affected Flags o..szapc\n           cpu.calculateFlags('DEC', dest.size, res)\n\n\nMemory\nclass Memory:\n    def mprotect(self, start, size, perms): …\n    def munmap(self, start, size): …\n    def mmap(self, addr, size, perms): …\n    def putchar(self, addr, data): …\n    def getchar(self, addr): …\n\n\nOperating System Model (Linux)\nclass Linux:\n   def exe(self, filename, argv=[], envp=[]):…\n   def syscall(self, cpu):…\n   def sys_open(self, cpu, buf, flags, mode):…\ndef sys_read(self, cpu, fd, buf, count):…    \ndef sys_write(self, cpu, fd, buf, size):…\n   def sys_close(self, cpu, fd):…\n   def sys_brk(self, cpu, brk):…\n\n\nSymbols and SMT solver\nclass Solver:\n    def getallvalues(self, x, maxcnt = 30):\n    def minmax(self, x, iters=10000):\n    def check(self):\n    def add(self, constraint):\n#Symbols factory\n    def mkArray(self, size, name ):…\n    def mkBool(self, name ):…\n    def mkBitVec(self, size, name ):…"
+    },
+    {
+      "chunk_index": 2,
+      "section": null,
+      "page": 17,
+      "text": "Operation over symbols is almost \ntransparent\n>>> from smtlibv2 import *\n>>> s = Solver()\n>>> a = s.mkBitVec(32)\n>>> b = s.mkBitVec(32)\n>>> s.add(a + 2*b > 100)\n>>> s.check()           \n'sat'\n>>> s.getvalue(a), s.getvalue(b)\n(101, 0)\n\n\nThe glue: Basic Initialization\n1. Make Solver, Memory, Cpu and Linux \nobjects.\n2. Load ELF binary program in Memory,  \nInitialize cpu registers, initialize stack.\nsolver = Solver()\nmem = SMemory(solver, bits, 12 )\ncpu = Cpu(mem, arch )\nlinux = SLinux(solver, [cpu], mem, ... )\nlinux.exe(“./my_test”, argv=[], env=[])\n\n\nThe glue: Basic analysis loop\nstates = [‘init.pkl’]\nwhile len(states) > 0 :\nlinux = load(state.pop())\nwhile linux.running:\nlinux.execute()\nif isinstance( linux.cpu.PC, Symbol):\n vals = solver.getallvalues(linux.\ncpu.PC)\n -- generate states for each value --\n break\n\nMicro demo\npython system.py -h\nusage: system.py [-h] [-sym SYM] [-stdin STDIN] \n[-stdout STDOUT]\n                 [-stderr STDERR] [-env ENV] \n                 PROGRAM ... \npython system.py -sym stdin  my_prog\n  stdin:\n     PDF-1.2++++++++++++++++++++++++++++++"
+    },
+    {
+      "chunk_index": 3,
+      "section": null,
+      "page": 21,
+      "text": "Symbolic inputs.\nWe need to mark whic part of the environment \nis symbolic:\n● STDIN: a file partially symbolic. Symbols \nmarked with “+”\n● STDOUT and STDERR are placeholders.\n● ARGV and ENVP can be symbolic\n\nA toy example\nint main(int argc, char* argv[], char* envp[]){\n    char buffer[0x100] = {0};\n    read(0, buffer, 0x100);\n    if (strcmp(buffer, \"ZARAZA\") == 0 )\n        printf(\"Message: ZARAZA!\\n\");\n    else \n        printf(\"Message: Not Found!\\n\");\nreturn 0;\n}\n\n\nConclusions, future work\n● Push all known optimizations: solver cache, \nimplied values, Redundant State Elimination, \nconstraint independence, KLEE-like cex \ncache, symbol simplification.\n● Add more cpu instructions (fpu, simd).\n● Improve Linux model, add network.\n● Implement OSX loader and os model.\n● https://github.com/feliam/pysymemu\n\ngGracias.\n Contacto:\n        feliam@binamuse.com"
+    }
+  ]
+}
